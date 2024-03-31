@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.2] - 2024-03-30
+### Changed
+- Removed check for deprecated `zlong_use_notify_send` variable
+- Removed `zlong_message` and instead make `zlong_alert_func` customizable
+- Default `zlong_alert_func` uses [`apprise`](https://github.com/caronc/apprise)
+  instead of `notify-send` and `alerter`
+- Added support for exit status to `zlong_alert_func`
+- Added `nvim` and `vi` to default `zlong_ignore_cmds`
+
 ## [0.2.1] - 2019-09-26
 ### Changed
 - CHANGELOG renamed to CHANGELOG.md
