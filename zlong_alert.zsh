@@ -22,7 +22,7 @@ fi
 (( ${+zlong_duration} )) || zlong_duration=15
 
 # Set commands to ignore (do not notify) if needed
-(( ${+zlong_ignore_cmds} )) || zlong_ignore_cmds='vim ssh'
+(( ${+zlong_ignore_cmds} )) || zlong_ignore_cmds='bat emacs htop info less mail man meld most mutt nano nvim screen ssh tail tmux top vi vim watch'
 
 # Set prefixes to ignore (consider command in argument) if needed
 (( ${+zlong_ignore_pfxs} )) || zlong_ignore_pfxs='sudo time'
