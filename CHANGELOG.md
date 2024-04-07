@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.3] - 2024-04-07
+### Changed
+- Renamed `zlong_ignore_pfxs` to `zlong_strip_pfxs` and changed it to an array
+- Renamed `zlong_ignore_cmds` to `zlong_ignore_cmdpfxs` and changed it to an array
+- Support disabling of alerts via full command prefixes (support spaces) via `zlong_ignore_cmdpfxs` (useful for, e.g., `git log` and similar interactive sub-commands)
+
 ## [0.2.2] - 2024-03-30
 ### Changed
 - Removed check for deprecated `zlong_use_notify_send` variable

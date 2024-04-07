@@ -13,11 +13,35 @@ autoload -Uz add-zsh-hook || return
 # Define a long duration if needed
 (( ${+zlong_duration} )) || zlong_duration=15
 
-# Set commands to ignore (do not notify) if needed
-(( ${+zlong_ignore_cmds} )) || zlong_ignore_cmds='bat emacs htop info less mail man meld most mutt nano nvim screen ssh tail tmux top vi vim watch'
+# Set command prefixes that prevent alerts (e.g., because the indicate interactive commands like `vi`)
+(( ${+zlong_ignore_cmdpfxs} )) ||
+    zlong_ignore_cmdpfxs=(
+        'bat'
+        'emacs'
+        'git diff'
+        'git log'
+        'htop'
+        'info'
+        'less'
+        'mail'
+        'man'
+        'meld'
+        'most'
+        'mutt'
+        'nano'
+        'nvim'
+        'screen'
+        'ssh'
+        'tail'
+        'tmux'
+        'top'
+        'vi'
+        'vim'
+        'watch'
+    )
 
-# Set prefixes to ignore (consider command in argument) if needed
-(( ${+zlong_ignore_pfxs} )) || zlong_ignore_pfxs='sudo time'
+# Set prefixes to strip from commands (not considered part of actual command)
+(( ${+zlong_strip_pfxs} )) || zlong_strip_pfxs=(sudo time)
 
 # Set as true to ignore commands starting with a space
 (( ${+zlong_ignorespace} )) || zlong_ignorespace='false'
@@ -58,39 +82,43 @@ zlong_alert_post() {
     local -i exit_status=$?
 
     # Do nothing if explicitly disabled
-    if [[ "$zlong_send_notifications" == false ]]; then
-        return;
-    fi
+    [[ "$zlong_send_notifications" == false ]] && return
 
+    # Reset global last command after storing in local variable for further use
+    local last_cmd=$zlong_last_cmd
+    zlong_last_cmd=''
+
+    # Do not alert if duration does not exceed $zlong_duration
     local duration=$(($EPOCHSECONDS - ${zlong_timestamp-$EPOCHSECONDS}))
-    local lasted_long=$(($duration - $zlong_duration))
-    local cmd_head
+    [[ $duration -le $zlong_duration ]] && return
 
-    # Ignore leading spaces (-L) and command prefixes (like time and sudo)
-    typeset -L last_cmd_no_pfx="$zlong_last_cmd"
+    # Strip leading spaces (-L) and prefixes from $zlong_strip_pfxs
+    typeset -L last_cmd_no_pfx="$last_cmd"
+    local cmd_head
     local no_pfx
     while [[ -n "$last_cmd_no_pfx" && -z "$no_pfx" ]]; do
         cmd_head="${last_cmd_no_pfx%% *}"
-        if [[ "$zlong_ignore_pfxs" =~ "(^|[[:space:]])${(q)cmd_head}([[:space:]]|$)" ]]; then
+        if [[ "${zlong_strip_pfxs[@]}" =~ "(^|[[:space:]])${(q)cmd_head}([[:space:]]|$)" ]]; then
             last_cmd_no_pfx="${last_cmd_no_pfx#* }"
         else
             no_pfx=true
         fi
     done
+    [[ -z $last_cmd_no_pfx ]] && return
 
-    # Notify only if delay > $zlong_duration and command not ignored
-    if [[ $lasted_long -gt 0 && ! -z $last_cmd_no_pfx && ! "$zlong_ignore_cmds" =~ "(^|[[:space:]])${(q)cmd_head}([[:space:]]|$)" ]]; then
-        [[ $(declare -f zlong_alert_func) ]] &&
-            zlong_alert_func         "$zlong_last_cmd" "$duration" "$exit_status" ||
-            zlong_alert_func_default "$zlong_last_cmd" "$duration" "$exit_status"
+    # Do not alert for commands starting with an ignored command prefix
+    for cmdpfx in $zlong_ignore_cmdpfxs; do
+        [[ $last_cmd_no_pfx = $cmdpfx* ]] && return
+    done
 
-        # Sound bell if configured
-        if [[ "$zlong_terminal_bell" == 'true' ]]; then
-            echo -n "\a"
-        fi
+    [[ $(declare -f zlong_alert_func) ]] &&
+        zlong_alert_func         "$last_cmd" "$duration" "$exit_status" ||
+        zlong_alert_func_default "$last_cmd" "$duration" "$exit_status"
+
+    # Sound bell if configured
+    if [[ "$zlong_terminal_bell" == 'true' ]]; then
+        echo -n "\a"
     fi
-
-    zlong_last_cmd=''
 }
 
 add-zsh-hook preexec zlong_alert_pre

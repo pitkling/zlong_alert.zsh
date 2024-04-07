@@ -56,8 +56,8 @@ source /path/to/zlong_alert.zsh
 There are 7 variables you can set that will alter the behavior this script.
 
 - `zlong_duration` (default: `15`): number of seconds that is considered a long duration.
-- `zlong_ignore_cmds` (default: `"nvim vi vim ssh"`): commands to ignore (do not notify).
-- `zlong_ignore_pfxs` (default: `"sudo time"`): prefixes to ignore (consider command in argument).
+- `zlong_ignore_cmdpfxs` (default: see source): command prefixes that prevent alerts.
+- `zlong_strip_pfxs` (default: `"sudo time"`): prefixes to strip from commands (not considered part of actual command).
 - `zlong_send_notifications` (default: `true`): whether to send notifications.
 - `zlong_terminal_bell` (default: `true`): whether to enable the terminal bell.
 - `zlong_ignorespace` (default: `false`): whether to ignore commands with a leading space
@@ -67,7 +67,7 @@ For example, adding the following anywhere in your `.zshrc`
 ```bash
 zlong_send_notifications=false
 zlong_duration=2
-zlong_ignore_cmds="vim ssh pacman yay"
+zlong_ignore_cmdpfxs=(vim ssh pacman yay)
 ```
 will alert you, without sending a notification, if a command has lasted for more
 than 2 seconds, provided that the command does not start with any of `vim ssh
