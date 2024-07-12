@@ -61,8 +61,8 @@ zlong_alert_func_default() {
         zlong_internal_alert_func_default_disabled='true'
     else
         local ftime="$(printf '%dh:%dm:%ds\n' $(($secs / 3600)) $(($secs % 3600 / 60)) $(($secs % 60)))"
-        [[ $exit_status == "0" ]] && exit_status="✅ command succeeded" || exit_status="❌ command failed"
-        apprise --tag zlong_alert -t "$exit_status in $ftime" -b "$cmd"
+        [[ $exit_status == "0" ]] && exit_status="✅" || exit_status="❌"
+        apprise --tag zlong_alert -t "$exit_status on $HOST in $ftime" -b "$cmd"
     fi
 }
 
